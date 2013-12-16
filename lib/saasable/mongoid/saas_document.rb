@@ -64,21 +64,13 @@ module Saasable::Mongoid::SaasDocument
     end    
     
     def find_by_host! a_host
-      if Saasable::Mongoid::SaasDocument.saas_document.nil?
-        if Rails.env.production?
-          raise Saasable::Errors::NoSaasDocuments, "you need to set one Saasable::SaasDocument"
-        else
-          return nil
-        end
-      end
+      raise Saasable::Errors::NoSaasDocuments, "you need to set one Saasable::SaasDocument" if Saasable::Mongoid::SaasDocument.saas_document.nil?
       
-      possible_saas = Saasable::Mongoid::SaasDocument.saas_document.where(:hosts => a_host).to_a
-      if possible_saas.empty?
+      a_saas = Saasable::Mongoid::SaasDocument.saas_document.where(:hosts => a_host).first
+      if a_saas.nil?
         raise Saasable::Errors::SaasNotFound, "no #{Saasable::Mongoid::SaasDocument.saas_document.name} found for the host: \"#{a_host}\""
-      elsif possible_saas.count > 1
-        raise Saasable::Errors::MultipleSaasFound, "more then 1 #{Saasable::Mongoid::SaasDocument.saas_document.name} found for the host: \"#{a_host}\""
       else
-        return possible_saas.first
+        return a_saas
       end
     end
     
